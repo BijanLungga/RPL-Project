@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum SkillType {
+  HAVE
+  WANT
+}
+
+enum SwapStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+model User {
+  id               String        @id @default(uuid())
+  name             String
+  email            String        @unique
+  bio              String?       @db.Text
+  createdAt        DateTime      @default(now())
+  
+  skills           UserSkill[]
+  sentRequests     SwapRequest[] @relation("SentRequests")
+  receivedRequests SwapRequest[] @relation("ReceivedRequests")
+  chatMessages     ChatMessage[]
+}
+
+model UserSkill {
+  id        String    @id @default(uuid())
+  userId    String
+  skillName String
+  skillType SkillType
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SwapRequest {
+  id         String        @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     SwapStatus    @default(PENDING)
+  message    String?       @db.Text
+  createdAt  DateTime      @default(now())
+
+  sender       User          @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User          @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  chatMessages ChatMessage[]
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model ChatMessage {
+  id            String   @id @default(uuid())
+  swapRequestId String
+  senderId      String
+  messageText   String   @db.Text
+  createdAt     DateTime @default(now())
+
+  swapRequest SwapRequest @relation(fields: [swapRequestId], references: [id], onDelete: Cascade)
+  sender      User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([swapRequestId])
+  @@index([senderId])
+}

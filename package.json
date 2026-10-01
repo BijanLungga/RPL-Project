@@ -1,0 +1,22 @@
+{
+  "name": "skill-swap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SkillSwap - Platform Pertukaran Keahlian Antar-Pengguna (Peer-to-Peer)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces"
+  },
+  "keywords": [
+    "skill-swap",
+    "peer-to-peer",
+    "barter-skill"
+  ],
+  "author": "BijanLungga",
+  "license": "ISC"
+}
