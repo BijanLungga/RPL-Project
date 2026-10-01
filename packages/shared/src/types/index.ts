@@ -34,3 +34,4 @@ export interface ChatMessage {
   messageText: string;
   createdAt: Date | string;
 }
+
