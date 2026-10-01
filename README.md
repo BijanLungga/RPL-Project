@@ -90,6 +90,12 @@ Aplikasi **SkillSwap** dinyatakan selesai dan sukses dikembangkan jika memenuhi 
 * [ ] Seluruh operasi CRUD stabil tanpa critical bug pada pengujian dasar.
 
 
+
+
+
+
+
+
 # SkillSwap - Platform Pertukaran Keahlian Peer-to-Peer
 
 ## 1. Tujuan, Teknologi, dan Aturan Kode
