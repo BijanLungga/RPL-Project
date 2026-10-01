@@ -88,4 +88,147 @@ Aplikasi **SkillSwap** dinyatakan selesai dan sukses dikembangkan jika memenuhi 
 * [ ] Alur permintaan tukar (Swap Request) dari pending hingga disetujui berjalan lancar.
 * [ ] Fitur chat berfungsi dengan baik bagi pengguna yang telah terhubung.
 * [ ] Seluruh operasi CRUD stabil tanpa critical bug pada pengujian dasar.
+
+
+# SkillSwap - Platform Pertukaran Keahlian Peer-to-Peer
+
+## 1. Tujuan, Teknologi, dan Aturan Kode
+
+**Tujuan Aplikasi:**  
+Menghubungkan individu yang ingin mempelajari keahlian baru dengan orang lain yang memiliki keahlian tersebut melalui sistem barter atau pertukaran keterampilan secara langsung (*peer-to-peer*) tanpa biaya finansial. Aplikasi memfasilitasi pengelolaan profil keahlian, pencarian partner, pengajuan permintaan tukar, dan komunikasi dasar antar-pengguna.
+
+### Tech Stack
+* **Frontend:** React + TypeScript + Vite + Tailwind CSS   
+* **Backend:** Node.js + TypeScript + Express   
+* **Database:** MySQL   
+* **ORM:** Prisma   
+* **API Style:** REST API   
+* **Real-time (Opsional):** REST API dengan *polling* atau *refresh* sederhana untuk *chat* agar lebih efisien dan mudah diselesaikan dalam 12 pertemuan.
+* **Deployment/Local Env:** Docker Compose untuk Database   
+* **Config:** `.env.example` untuk URL database dan *environment variables*
+
+### Aturan Kode
+* Jangan tambahkan komentar kecuali sangat diperlukan untuk logika yang rumit.   
+* Gunakan `PascalCase` untuk *classes*, *types*, *interfaces*, *enums*, komponen React, model database, dan API DTOs.   
+* Gunakan `camelCase` untuk variabel lokal dan properti JSON.   
+* Jaga panjang baris kode di bawah 150 karakter.   
+* Gunakan struktur folder yang bersih, sederhana, dan modular.   
+* Gunakan bahasa Indonesia untuk semua label UI, tombol, pesan, dan validasi di frontend.
+
+---
+
+## 2. Entitas Utama & Aturan Database
+
+### Entitas Utama
+1. **User (Pengguna)**
+   * Id
+   * Name
+   * Email
+   * Bio
+   * CreatedAt
+
+2. **UserSkill (Keahlian Pengguna)**
+   * Id
+   * UserId
+   * SkillName
+   * SkillType (`HAVE` atau `WANT`)
+   * CreatedAt
+
+3. **SwapRequest (Permintaan Pertukaran)**
+   * Id
+   * SenderId
+   * ReceiverId
+   * Status (`PENDING`, `ACCEPTED`, `REJECTED`, `COMPLETED`)
+   * Message
+   * CreatedAt
+
+4. **ChatMessage (Pesan Obrolan)**
+   * Id
+   * SwapRequestId
+   * SenderId
+   * MessageText
+   * CreatedAt
+
+### Aturan Database
+* Sebuah `SwapRequest` harus unik antara pasangan pengirim dan penerima yang aktif guna menghindari duplikasi permintaan ganda yang belum selesai.
+* Jangan pernah menghapus data riwayat *swap request* atau obrolan yang sudah tersimpan (*keep history*).
+* Gunakan migrasi Prisma (*Prisma Migrations*) dan sediakan *seed data* contoh pengguna awal beserta daftar keahlian mereka (`HAVE` & `WANT`).
+
+---
+
+## 3. Fitur Backend
+
+1. **CRUD User & Profil Keahlian**
+   * Endpoint untuk pendaftaran/pembuatan profil pengguna, mengambil detail pengguna, memperbarui profil, serta menambah atau menghapus data keahlian (`Skill I Have` & `Skill I Want`).
+
+2. **Eksplorasi & Pencarian Partner**
+   * Endpoint pencarian dan filter daftar pengguna lain berdasarkan keahlian yang mereka tawarkan (`Skill I Have`) atau keahlian yang sedang mereka cari (`Skill I Want`).
+
+3. **Manajemen Swap Request**
+   * Endpoint untuk mengirim permintaan tukar keahlian baru (`POST /api/swap-requests`), mengambil daftar permintaan masuk/keluar, serta memperbarui status permintaan menjadi `ACCEPTED`, `REJECTED`, atau `COMPLETED` (`PUT /api/swap-requests/:Id`).
+
+4. **Sistem Chat Internal**
+   * Endpoint untuk mengirim pesan teks (`POST /api/swap-requests/:Id/messages`) dan mengambil riwayat pesan (`GET /api/swap-requests/:Id/messages`) di dalam sesi pertukaran yang statusnya sudah disetujui (`ACCEPTED`).
+
+5. **Dashboard API**
+   * Endpoint yang mengembalikan ringkasan data pengguna (total keahlian terdaftar, total permintaan aktif, dan status koneksi partner).
+
+---
+
+## 4. Fitur Frontend & Halaman
+
+1. **Dashboard**
+   * Ringkasan statistik (total keahlian terdaftar, total permintaan aktif, sesi pertukaran berjalan).
+   * Daftar rekomendasi partner potensial berdasarkan kecocokan keahlian (*Skill Match*).
+
+2. **Manajemen Profil & Keahlian**
+   * Formulir untuk mengubah data diri, bio, serta menambah atau menghapus daftar keahlian yang dikuasai (*Skill I Have*) dan yang ingin dipelajari (*Skill I Want*).
+
+3. **Eksplorasi Partner**
+   * Halaman pencarian dan filter pengguna lain berdasarkan kategori keahlian.
+   * Tombol: `Kirim Permintaan Tukar (Swap Request)`.
+
+4. **Manajemen Swap Request & Chat**
+   * Daftar status permintaan pertukaran (Pending, Disetujui, Ditolak, Selesai).
+   * Ruang obrolan sederhana (*chat room*) bagi pengguna yang sudah terhubung untuk koordinasi jadwal belajar.
+
+5. **Persyaratan UI:**
+   * Menggunakan **Bahasa Indonesia** untuk seluruh label, tombol, pesan, dan validasi.
+   * Menggunakan lencana status (*badge*) dengan warna: 
+     * Disetujui / Aktif: Hijau
+     * Menunggu / Pending: Kuning / Oranye
+     * Ditolak / Selesai: Merah / Abu-abu
+   * Desain responsif (*desktop* dan *mobile*), tabel sederhana, kartu (*cards*), dialog konfirmasi sebelum menghapus data, dan *empty states*.
+
+---
+
+## 5. Rute API yang Dibutuhkan
+
+* `GET /api/users`
+* `POST /api/users`
+* `GET /api/users/:Id`
+* `PUT /api/users/:Id`
+* `GET /api/users/:Id/skills`
+* `POST /api/users/:Id/skills`
+* `DELETE /api/skills/:Id`
+* `GET /api/explore`
+* `GET /api/swap-requests`
+* `POST /api/swap-requests`
+* `PUT /api/swap-requests/:Id`
+* `GET /api/swap-requests/:Id/messages`
+* `POST /api/swap-requests/:Id/messages`
+* `GET /api/dashboard`
+
+---
+
+## 6. Struktur Monorepo & Deliverables
+
+### Struktur Monorepo (TypeScript + npm workspaces)
+```text
+skill-swap/
+  apps/
+    web/
+    api/
+  packages/
+    shared/
 * [ ] Antarmuka dapat diakses secara responsif baik via desktop maupun mobile.
