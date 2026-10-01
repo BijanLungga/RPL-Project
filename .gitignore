@@ -3,17 +3,24 @@ node_modules/
 /.pnp
 .pnp.js
 
-# Production & Build
+# Production & Build outputs
 /dist
 /build
 out/
+.next/
+*.tsbuildinfo
 
-# Environment Variables
+# Environment variables & secrets
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
+
+# Prisma generated artifacts & local sqlite/db files
+prisma/*.db
+prisma/*.db-journal
 
 # Logs
 npm-debug.log*
@@ -22,15 +29,18 @@ yarn-error.log*
 pnpm-debug.log*
 *.log
 
-# Editor & IDE
+# Editor & IDE configs
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# OS metadata
 .DS_Store
 Thumbs.db
-
+Desktop.ini
